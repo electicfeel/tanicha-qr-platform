@@ -25,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const body = await req.json();
-  const { name, destination, fgColor, bgColor, size, isActive } = body;
+  const { name, destination, fgColor, bgColor, size, isActive, dotStyle, logoUrl } = body;
 
   const supabase = createSupabaseClient();
 
@@ -38,6 +38,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(bgColor !== undefined && { bg_color: bgColor }),
       ...(size !== undefined && { size }),
       ...(isActive !== undefined && { is_active: isActive }),
+      ...(dotStyle !== undefined && { dot_style: dotStyle }),
+      ...(logoUrl !== undefined && { logo_url: logoUrl }),
     })
     .eq("id", id)
     .select()

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseClient } from "@/lib/supabase";
-import { generateQRBuffer } from "@/lib/qr";
+import { generateQRSVGBuffer } from "@/lib/qr";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -17,16 +17,18 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (error) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const buffer = await generateQRBuffer(`${baseUrl}/r/${qr.code}`, {
+  const buffer = generateQRSVGBuffer(`${baseUrl}/r/${qr.code}`, {
     fgColor: qr.fg_color,
     bgColor: qr.bg_color,
     size: qr.size,
+    dotStyle: qr.dot_style ?? "square",
+    logoUrl: qr.logo_url ?? undefined,
   });
 
   return new NextResponse(buffer as unknown as BodyInit, {
     headers: {
-      "Content-Type": "image/png",
-      "Content-Disposition": `attachment; filename="${qr.name}-qr.png"`,
+      "Content-Type": "image/svg+xml",
+      "Content-Disposition": `attachment; filename="${qr.name}-qr.svg"`,
     },
   });
 }

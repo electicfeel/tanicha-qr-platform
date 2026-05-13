@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, destination, fgColor, bgColor, size } = body;
+  const { name, destination, fgColor, bgColor, size, dotStyle, logoUrl } = body;
 
   if (!name || !destination) {
     return NextResponse.json(
@@ -44,6 +44,8 @@ export async function POST(req: NextRequest) {
       fg_color: fgColor ?? "#000000",
       bg_color: bgColor ?? "#FFFFFF",
       size: size ?? 300,
+      dot_style: dotStyle ?? "square",
+      logo_url: logoUrl ?? null,
     })
     .select()
     .single();

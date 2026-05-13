@@ -1,6 +1,7 @@
 import EditQRForm from "@/components/EditQRForm";
 import { createSupabaseClient } from "@/lib/supabase";
-import { generateQRDataURL } from "@/lib/qr";
+import { generateQRSVGString } from "@/lib/qr";
+import type { DotStyle } from "@/lib/qr";
 import { notFound } from "next/navigation";
 
 type Props = { params: Promise<{ id: string }> };
@@ -19,11 +20,15 @@ export default async function EditQRPage({ params }: Props) {
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
   const redirectUrl = `${baseUrl}/r/${qr.code}`;
-  const qrImage = await generateQRDataURL(redirectUrl, {
+
+  const svg = generateQRSVGString(redirectUrl, {
     fgColor: qr.fg_color,
     bgColor: qr.bg_color,
     size: 280,
+    dotStyle: (qr.dot_style ?? "square") as DotStyle,
+    logoUrl: qr.logo_url ?? undefined,
   });
+  const qrSrc = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 
   return (
     <div className="max-w-2xl">
@@ -36,12 +41,11 @@ export default async function EditQRPage({ params }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col items-center gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qrImage} alt={qr.name} width={280} height={280} className="rounded-xl border border-neutral-800" />
-          <a
-            href={`/api/qr/${qr.id}/download`}
-            className="w-full text-center border border-neutral-700 rounded-lg py-2.5 text-sm hover:border-neutral-400 transition-colors"
-          >
-            ดาวน์โหลด PNG
+          <img src={qrSrc} alt={qr.name} width={280} height={280}
+            className="rounded-xl border border-neutral-800" />
+          <a href={`/api/qr/${qr.id}/download`}
+            className="w-full text-center border border-neutral-700 rounded-lg py-2.5 text-sm hover:border-neutral-400 transition-colors">
+            ดาวน์โหลด SVG
           </a>
         </div>
 
@@ -54,6 +58,8 @@ export default async function EditQRPage({ params }: Props) {
             bgColor: qr.bg_color,
             size: qr.size,
             isActive: qr.is_active,
+            dotStyle: (qr.dot_style ?? "square") as DotStyle,
+            logoUrl: qr.logo_url ?? "",
           }}
         />
       </div>
