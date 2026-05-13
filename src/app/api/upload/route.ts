@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseClient } from "@/lib/supabase";
 
+async function ensureBucket(supabase: ReturnType<typeof createSupabaseClient>) {
+  const { data: buckets } = await supabase.storage.listBuckets();
+  const exists = buckets?.some((b) => b.name === "logos");
+  if (!exists) {
+    await supabase.storage.createBucket("logos", { public: true });
+  }
+}
+
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
@@ -16,9 +24,10 @@ export async function POST(req: NextRequest) {
 
   const ext = file.name.split(".").pop() ?? "png";
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
   const buffer = Buffer.from(await file.arrayBuffer());
+
   const supabase = createSupabaseClient();
+  await ensureBucket(supabase);
 
   const { error } = await supabase.storage
     .from("logos")
