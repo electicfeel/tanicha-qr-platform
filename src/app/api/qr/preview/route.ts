@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const dotStyle = (searchParams.get("dotStyle") ?? "square") as DotStyle;
   const logoUrl = searchParams.get("logoUrl") ?? undefined;
 
-  const svg = generateQRSVGString(destination, { fgColor, bgColor, size, dotStyle, logoUrl });
+  const svg = await generateQRSVGString(destination, { fgColor, bgColor, size, dotStyle, logoUrl });
 
   return new NextResponse(svg, {
     headers: { "Content-Type": "image/svg+xml", "Cache-Control": "no-store" },

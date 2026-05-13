@@ -17,7 +17,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (error) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  const buffer = generateQRSVGBuffer(`${baseUrl}/r/${qr.code}`, {
+  const buffer = await generateQRSVGBuffer(`${baseUrl}/r/${qr.code}`, {
     fgColor: qr.fg_color,
     bgColor: qr.bg_color,
     size: qr.size,

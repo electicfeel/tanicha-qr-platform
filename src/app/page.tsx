@@ -22,6 +22,8 @@ export default async function DashboardPage() {
         fgColor: qr.fg_color,
         bgColor: qr.bg_color,
         size: 200,
+        dotStyle: qr.dot_style ?? "square",
+        logoUrl: qr.logo_url ?? undefined,
       })
     )
   );

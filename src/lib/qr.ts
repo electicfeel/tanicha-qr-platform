@@ -10,10 +10,23 @@ interface QROptions {
   logoUrl?: string;
 }
 
-function buildSVG(
+async function fetchLogoBase64(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const contentType = res.headers.get("content-type") ?? "image/png";
+    const buffer = await res.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+    return `data:${contentType};base64,${base64}`;
+  } catch {
+    return null;
+  }
+}
+
+async function buildSVG(
   url: string,
   { fgColor = "#000000", bgColor = "#FFFFFF", size = 300, dotStyle = "square", logoUrl }: QROptions
-): string {
+): Promise<string> {
   const qr = QRCode.create(url, { errorCorrectionLevel: "H" });
   const count = qr.modules.size;
   const margin = 4;
@@ -38,13 +51,16 @@ function buildSVG(
 
   let logoEl = "";
   if (logoUrl) {
-    const logoSize = size * 0.22;
-    const lx = (size - logoSize) / 2;
-    const ly = (size - logoSize) / 2;
-    const pad = 4;
-    logoEl = `
+    const logoData = await fetchLogoBase64(logoUrl);
+    if (logoData) {
+      const logoSize = size * 0.22;
+      const lx = (size - logoSize) / 2;
+      const ly = (size - logoSize) / 2;
+      const pad = 4;
+      logoEl = `
       <rect x="${(lx - pad).toFixed(2)}" y="${(ly - pad).toFixed(2)}" width="${(logoSize + pad * 2).toFixed(2)}" height="${(logoSize + pad * 2).toFixed(2)}" rx="6" fill="${bgColor}"/>
-      <image href="${logoUrl}" x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" width="${logoSize.toFixed(2)}" height="${logoSize.toFixed(2)}" preserveAspectRatio="xMidYMid meet"/>`;
+      <image href="${logoData}" x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" width="${logoSize.toFixed(2)}" height="${logoSize.toFixed(2)}" preserveAspectRatio="xMidYMid meet"/>`;
+    }
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
@@ -54,16 +70,16 @@ function buildSVG(
 </svg>`;
 }
 
-export function generateQRSVGString(url: string, options: QROptions = {}): string {
+export async function generateQRSVGString(url: string, options: QROptions = {}): Promise<string> {
   return buildSVG(url, options);
 }
 
-export function generateQRDataURL(url: string, options: QROptions = {}): string {
-  const svg = buildSVG(url, options);
+export async function generateQRDataURL(url: string, options: QROptions = {}): Promise<string> {
+  const svg = await buildSVG(url, options);
   const encoded = Buffer.from(svg).toString("base64");
   return `data:image/svg+xml;base64,${encoded}`;
 }
 
-export function generateQRSVGBuffer(url: string, options: QROptions = {}): Buffer {
-  return Buffer.from(buildSVG(url, options));
+export async function generateQRSVGBuffer(url: string, options: QROptions = {}): Promise<Buffer> {
+  return Buffer.from(await buildSVG(url, options));
 }

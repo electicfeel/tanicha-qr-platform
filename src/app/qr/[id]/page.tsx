@@ -21,7 +21,7 @@ export default async function EditQRPage({ params }: Props) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
   const redirectUrl = `${baseUrl}/r/${qr.code}`;
 
-  const svg = generateQRSVGString(redirectUrl, {
+  const svg = await generateQRSVGString(redirectUrl, {
     fgColor: qr.fg_color,
     bgColor: qr.bg_color,
     size: 280,
