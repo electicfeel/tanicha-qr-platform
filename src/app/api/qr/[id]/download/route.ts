@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseClient } from "@/lib/supabase";
 import { generateQRSVGBuffer } from "@/lib/qr";
+import { getBaseUrl } from "@/lib/url";
 import sharp from "sharp";
 
 type Params = { params: Promise<{ id: string }> };
@@ -17,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   if (error) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const baseUrl = getBaseUrl();
   const svgBuffer = await generateQRSVGBuffer(`${baseUrl}/r/${qr.code}`, {
     fgColor: qr.fg_color,
     bgColor: qr.bg_color,

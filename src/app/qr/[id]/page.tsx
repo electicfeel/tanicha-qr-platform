@@ -2,6 +2,7 @@ import EditQRForm from "@/components/EditQRForm";
 import { createSupabaseClient } from "@/lib/supabase";
 import { generateQRSVGString } from "@/lib/qr";
 import type { DotStyle } from "@/lib/qr";
+import { getBaseUrl } from "@/lib/url";
 import { notFound } from "next/navigation";
 
 type Props = { params: Promise<{ id: string }> };
@@ -18,7 +19,7 @@ export default async function EditQRPage({ params }: Props) {
 
   if (error || !qr) notFound();
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const baseUrl = getBaseUrl();
   const redirectUrl = `${baseUrl}/r/${qr.code}`;
 
   const svg = await generateQRSVGString(redirectUrl, {

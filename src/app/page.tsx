@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createSupabaseClient } from "@/lib/supabase";
 import { generateQRDataURL } from "@/lib/qr";
+import { getBaseUrl } from "@/lib/url";
 import QRCardActions from "@/components/QRCardActions";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false });
 
   const list = qrCodes ?? [];
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const baseUrl = getBaseUrl();
 
   const qrImages = await Promise.all(
     list.map((qr) =>
