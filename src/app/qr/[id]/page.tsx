@@ -45,7 +45,7 @@ export default async function EditQRPage({ params }: Props) {
             className="rounded-xl border border-neutral-800" />
           <a href={`/api/qr/${qr.id}/download`}
             className="w-full text-center border border-neutral-700 rounded-lg py-2.5 text-sm hover:border-neutral-400 transition-colors">
-            ดาวน์โหลด SVG
+            ดาวน์โหลด PNG
           </a>
         </div>
 
