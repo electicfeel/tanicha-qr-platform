@@ -1,0 +1,62 @@
+import EditQRForm from "@/components/EditQRForm";
+import { createSupabaseClient } from "@/lib/supabase";
+import { generateQRDataURL } from "@/lib/qr";
+import { notFound } from "next/navigation";
+
+type Props = { params: Promise<{ id: string }> };
+
+export default async function EditQRPage({ params }: Props) {
+  const { id } = await params;
+  const supabase = createSupabaseClient();
+
+  const { data: qr, error } = await supabase
+    .from("qr_codes")
+    .select("*, scans(count)")
+    .eq("id", id)
+    .single();
+
+  if (error || !qr) notFound();
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const redirectUrl = `${baseUrl}/r/${qr.code}`;
+  const qrImage = await generateQRDataURL(redirectUrl, {
+    fgColor: qr.fg_color,
+    bgColor: qr.bg_color,
+    size: 280,
+  });
+
+  return (
+    <div className="max-w-2xl">
+      <h1 className="text-2xl font-semibold mb-2">{qr.name}</h1>
+      <p className="text-neutral-400 text-sm mb-8">
+        สแกนแล้ว {qr.scans?.[0]?.count ?? 0} ครั้ง · Short URL:{" "}
+        <span className="font-mono">{redirectUrl}</span>
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="flex flex-col items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={qrImage} alt={qr.name} width={280} height={280} className="rounded-xl border border-neutral-800" />
+          <a
+            href={`/api/qr/${qr.id}/download`}
+            className="w-full text-center border border-neutral-700 rounded-lg py-2.5 text-sm hover:border-neutral-400 transition-colors"
+          >
+            ดาวน์โหลด PNG
+          </a>
+        </div>
+
+        <EditQRForm
+          qr={{
+            id: qr.id,
+            name: qr.name,
+            destination: qr.destination,
+            fgColor: qr.fg_color,
+            bgColor: qr.bg_color,
+            size: qr.size,
+            isActive: qr.is_active,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
