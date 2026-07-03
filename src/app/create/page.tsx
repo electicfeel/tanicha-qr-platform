@@ -69,14 +69,17 @@ export default function CreatePage() {
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-semibold mb-8">สร้าง QR ใหม่</h1>
+      <h1 className="text-2xl font-semibold mb-1">สร้างลิงก์ใหม่</h1>
+      <p className="text-neutral-400 text-sm mb-8">
+        ได้ short link ที่เปลี่ยนปลายทางได้ตลอด — พร้อม QR ให้อัตโนมัติ (ปรับแต่งได้)
+      </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor={`${uid}-name`} className="text-sm text-neutral-400">ชื่อ QR</label>
+            <label htmlFor={`${uid}-name`} className="text-sm text-neutral-400">ชื่อลิงก์</label>
             <input
               id={`${uid}-name`}
               type="text"
@@ -127,6 +130,14 @@ export default function CreatePage() {
               />
             </div>
           </div>
+
+          {/* QR customization — ออปชัน (ลิงก์คือของหลัก) */}
+          <details className="group border border-neutral-800 rounded-xl">
+            <summary className={`focus-ring cursor-pointer list-none rounded-xl px-4 py-3 text-sm text-neutral-300 hover:text-neutral-100 transition-colors flex items-center justify-between`}>
+              <span>ปรับแต่ง QR (ไม่บังคับ — มีค่าเริ่มต้นให้แล้ว)</span>
+              <span aria-hidden className="text-neutral-500 transition-transform group-open:rotate-180">▾</span>
+            </summary>
+            <div className="flex flex-col gap-6 px-4 pb-4 pt-1">
 
           {/* Dot Style */}
           <div className="flex flex-col gap-2">
@@ -195,6 +206,9 @@ export default function CreatePage() {
             onChange={(url) => update("logoUrl", url)}
           />
 
+            </div>
+          </details>
+
           {error && <p role="alert" className="text-red-400 text-sm">{error}</p>}
 
           <div className="flex gap-3 pt-2">
@@ -204,7 +218,7 @@ export default function CreatePage() {
             </button>
             <button type="submit" disabled={loading}
               className="focus-ring flex-1 bg-neutral-100 text-neutral-950 rounded-lg py-2.5 text-sm font-medium hover:bg-white transition-colors disabled:opacity-50">
-              {loading ? "กำลังสร้าง..." : "สร้าง QR"}
+              {loading ? "กำลังสร้าง..." : "สร้างลิงก์"}
             </button>
           </div>
         </form>

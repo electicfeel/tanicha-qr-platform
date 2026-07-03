@@ -29,7 +29,8 @@ export default async function EditQRPage({ params }: Props) {
   const baseUrl = await getBaseUrl();
   const redirectUrl = `${baseUrl}/r/${qr.code}`;
 
-  const svg = await generateQRSVGString(redirectUrl, {
+  // QR ฝัง ?qr=1 เพื่อแยกช่องทางสแกน — ส่วน redirectUrl ที่แสดง/คัดลอกคงสะอาดไว้
+  const svg = await generateQRSVGString(`${redirectUrl}?qr=1`, {
     fgColor: qr.fg_color,
     bgColor: qr.bg_color,
     size: 280,

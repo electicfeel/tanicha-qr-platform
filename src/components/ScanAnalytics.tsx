@@ -52,12 +52,13 @@ export default function ScanAnalytics({
   analytics: Analytics;
   exportHref: string;
 }) {
-  const { total, lastScanAt, daily, devices, countries, referrers } = analytics;
+  const { total, qrScans, linkClicks, lastScanAt, daily, devices, countries, referrers } = analytics;
+  const legacy = total - qrScans - linkClicks; // แถวเก่าก่อนมีระบบแยกช่องทาง
 
   return (
     <section className="mt-12 border-t border-neutral-800 pt-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold">สถิติการสแกน</h2>
+        <h2 className="text-lg font-semibold">สถิติการเข้าถึง</h2>
         <a
           href={exportHref}
           className="focus-ring text-xs border border-neutral-700 rounded-lg px-3 py-1.5 hover:border-neutral-400 transition-colors"
@@ -66,21 +67,32 @@ export default function ScanAnalytics({
         </a>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+      <div className="mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="border border-neutral-800 rounded-xl p-4">
-          <p className="text-neutral-500 text-xs">สแกนทั้งหมด</p>
+          <p className="text-neutral-500 text-xs">เข้าถึงทั้งหมด</p>
           <p className="text-2xl font-semibold mt-1">{total}</p>
         </div>
         <div className="border border-neutral-800 rounded-xl p-4">
-          <p className="text-neutral-500 text-xs">สแกนล่าสุด</p>
+          <p className="text-neutral-500 text-xs">สแกน QR</p>
+          <p className="text-2xl font-semibold mt-1">{qrScans}</p>
+        </div>
+        <div className="border border-neutral-800 rounded-xl p-4">
+          <p className="text-neutral-500 text-xs">คลิกลิงก์</p>
+          <p className="text-2xl font-semibold mt-1">{linkClicks}</p>
+        </div>
+        <div className="border border-neutral-800 rounded-xl p-4">
+          <p className="text-neutral-500 text-xs">ล่าสุด</p>
           <p className="text-sm font-medium mt-2">
             {lastScanAt ? new Date(lastScanAt).toLocaleString("th-TH") : "—"}
           </p>
         </div>
-        <div className="border border-neutral-800 rounded-xl p-4 col-span-2 sm:col-span-1">
-          <p className="text-neutral-500 text-xs">อุปกรณ์ยอดนิยม</p>
-          <p className="text-sm font-medium mt-2">{devices[0]?.label ?? "—"}</p>
-        </div>
+      </div>
+      {legacy > 0 && (
+        <p className="text-neutral-500 text-xs mt-2">
+          * {legacy} ครั้งเป็นข้อมูลเก่าก่อนระบบแยกช่องทาง (นับรวมใน &ldquo;เข้าถึงทั้งหมด&rdquo;)
+        </p>
+      )}
       </div>
 
       <div className="border border-neutral-800 rounded-xl p-5 mb-8">

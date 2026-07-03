@@ -52,8 +52,8 @@ export default function QRCardActions({ qrId, qrName, isActive }: Props) {
   const FOCUS = "focus-ring";
 
   return (
-    <div className="pt-1 border-t border-neutral-800">
-      <div className="flex gap-2">
+    <div>
+      <div className="flex flex-wrap gap-2">
         <Link
           href={`/qr/${qrId}`}
           className={`flex-1 text-center text-xs py-2.5 rounded-lg border border-neutral-700 hover:border-neutral-500 transition-colors ${FOCUS}`}

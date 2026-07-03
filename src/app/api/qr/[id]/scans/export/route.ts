@@ -21,15 +21,16 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   if (!qr) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // select("*") ทนต่อคอลัมน์ที่ยังไม่ migrate
   const { data: scans } = await supabase
     .from("scans")
-    .select("scanned_at, device_type, country, referrer, user_agent")
+    .select("*")
     .eq("qr_code_id", id)
     .order("scanned_at", { ascending: false });
 
-  const header = ["scanned_at", "device_type", "country", "referrer", "user_agent"];
+  const header = ["scanned_at", "via", "device_type", "country", "referrer", "user_agent"];
   const rows = (scans ?? []).map((s) =>
-    [s.scanned_at, s.device_type, s.country, s.referrer, s.user_agent].map(csvCell).join(",")
+    [s.scanned_at, s.via, s.device_type, s.country, s.referrer, s.user_agent].map(csvCell).join(",")
   );
   const csv = [header.join(","), ...rows].join("\n");
 

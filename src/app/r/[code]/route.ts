@@ -21,18 +21,21 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   // บันทึก scan พร้อมข้อมูลสำหรับ analytics — ห้ามให้ error ตรงนี้ block การ redirect
   const userAgent = req.headers.get("user-agent");
+  // QR ที่ระบบสร้างฝัง ?qr=1 ไว้ → แยก "สแกน QR" ออกจาก "คลิกลิงก์"
+  const via = req.nextUrl.searchParams.get("qr") === "1" ? "qr" : "link";
   try {
-    const { error: insertError } = await supabase.from("scans").insert({
+    const analyticsRow = {
       qr_code_id: qr.id,
       user_agent: userAgent,
       referrer: req.headers.get("referer"),
       device_type: detectDeviceType(userAgent),
       country: req.headers.get("x-vercel-ip-country"),
-    });
-    // ถ้าคอลัมน์ analytics ยังไม่มี (ยังไม่ได้รัน migration) ให้ถอยไปบันทึกแบบเดิม
-    // เพื่อไม่ให้การนับ scan พังระหว่างรอ migration
+    };
+    const { error: insertError } = await supabase.from("scans").insert({ ...analyticsRow, via });
     if (insertError) {
-      await supabase.from("scans").insert({ qr_code_id: qr.id });
+      // ถอยทีละขั้นระหว่างรอ migration: ตัด via ก่อน (คงข้อมูล analytics) แล้วค่อยเหลือขั้นต่ำ
+      const { error: retryError } = await supabase.from("scans").insert(analyticsRow);
+      if (retryError) await supabase.from("scans").insert({ qr_code_id: qr.id });
     }
   } catch {
     // ไม่ทำอะไร — ปล่อยให้ผู้ใช้ถูก redirect ตามปกติแม้บันทึกไม่สำเร็จ

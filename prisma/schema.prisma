@@ -34,4 +34,5 @@ model Scan {
   referrer   String?
   deviceType String?
   country    String?
+  via        String? // 'qr' | 'link'
 }

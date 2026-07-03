@@ -1,16 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DailyCount } from "@/lib/analytics";
 import QRCardActions from "@/components/QRCardActions";
 import Sparkline from "@/components/Sparkline";
+import CopyButton from "@/components/CopyButton";
 
 export type DriveQR = {
   id: string;
   name: string;
   code: string;
   destination: string;
+  shortUrl: string;
   isActive: boolean;
   groupName: string | null;
   scanCount: number;
@@ -174,55 +177,62 @@ export default function DriveView({
         </div>
       )}
 
-      {/* ไฟล์ QR */}
+      {/* รายการลิงก์ (แถวแบบ link-first — QR เป็น thumbnail) */}
       <p className="text-xs text-neutral-500 mb-2">
-        QR {currentFolder ? `ในโฟลเดอร์ "${currentFolder}"` : "ที่ยังไม่จัดกลุ่ม"} · {visible.length} รายการ
+        ลิงก์{currentFolder ? `ในโฟลเดอร์ "${currentFolder}"` : "ที่ยังไม่จัดกลุ่ม"} · {visible.length} รายการ
       </p>
       {visible.length === 0 ? (
         <p className="text-neutral-500 text-sm py-8 text-center border border-dashed border-neutral-800 rounded-xl">
-          {currentFolder ? "โฟลเดอร์นี้ยังไม่มี QR — ลากไฟล์จากหน้าแรกมาวางที่โฟลเดอร์นี้" : "ไม่มี QR ที่ยังไม่จัดกลุ่ม"}
+          {currentFolder ? "โฟลเดอร์นี้ยังไม่มีลิงก์ — ลากลิงก์จากหน้าแรกมาวางที่โฟลเดอร์นี้" : "ไม่มีลิงก์ที่ยังไม่จัดกลุ่ม"}
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-3">
           {visible.map((qr) => (
             <div
               key={qr.id}
               draggable
               onDragStart={() => setDraggedId(qr.id)}
               onDragEnd={endDrag}
-              className={`border rounded-2xl p-5 flex flex-col gap-4 transition-colors cursor-grab active:cursor-grabbing ${
+              className={`border rounded-xl p-4 flex flex-col gap-3 transition-colors cursor-grab active:cursor-grabbing ${
                 draggedId === qr.id ? "border-neutral-500 opacity-50" : "border-neutral-800 hover:border-neutral-600"
               }`}
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h2 className="font-medium truncate">{qr.name}</h2>
+              <div className="flex items-center gap-4">
+                {/* QR thumbnail — คลิกไปหน้า detail */}
+                <Link href={`/qr/${qr.id}`} className={`shrink-0 rounded-lg ${FOCUS}`}
+                  aria-label={`เปิดรายละเอียด ${qr.name}`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={qr.imageSrc} alt="" width={56} height={56}
+                    className="rounded-lg border border-neutral-800 pointer-events-none" />
+                </Link>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-medium truncate">{qr.name}</h2>
+                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full ${qr.isActive ? "bg-emerald-900/40 text-emerald-400" : "bg-neutral-800 text-neutral-500"}`}>
+                      {qr.isActive ? "เปิด" : "ปิด"}
+                    </span>
+                  </div>
                   <p className="text-neutral-400 text-xs truncate mt-0.5">{qr.destination}</p>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <span className="text-neutral-500 text-xs font-mono truncate">/r/{qr.code}</span>
+                    <CopyButton text={qr.shortUrl} />
+                  </div>
                 </div>
-                <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full ${qr.isActive ? "bg-emerald-900/40 text-emerald-400" : "bg-neutral-800 text-neutral-500"}`}>
-                  {qr.isActive ? "เปิด" : "ปิด"}
-                </span>
+
+                <div className="hidden sm:flex flex-col items-end gap-1.5 shrink-0 w-32">
+                  <span className="text-neutral-400 text-sm">
+                    เข้าถึง <span className="text-neutral-100 font-medium">{qr.scanCount}</span> ครั้ง
+                  </span>
+                  <div className="flex items-center gap-1.5 w-full">
+                    <Sparkline daily={qr.sparkDaily} />
+                    <span className="text-neutral-500 text-[10px] shrink-0">{SPARK_DAYS}วัน</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex justify-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={qr.imageSrc} alt={qr.name} width={140} height={140} className="rounded-lg pointer-events-none" />
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-neutral-400">
-                  สแกน <span className="text-neutral-100 font-medium">{qr.scanCount}</span> ครั้ง
-                </span>
-                <span className="text-neutral-500 text-xs font-mono">/r/{qr.code}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Sparkline daily={qr.sparkDaily} />
-                <span className="text-neutral-500 text-[10px] shrink-0">{SPARK_DAYS} วัน</span>
-              </div>
-
-              {/* ทางเลือกที่ใช้คีย์บอร์ด/ทัชได้ (นอกจากลาก) สำหรับย้ายเข้าโฟลเดอร์ */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* ทางเลือกที่ใช้คีย์บอร์ด/ทัชได้ (นอกจากลาก) สำหรับย้ายเข้าโฟลเดอร์ */}
                 <label htmlFor={`move-${qr.id}`} className="text-neutral-500 text-xs shrink-0">
                   โฟลเดอร์
                 </label>
@@ -232,16 +242,17 @@ export default function DriveView({
                   disabled={moving}
                   onChange={(e) => moveTo(qr.id, e.target.value || null)}
                   aria-label={`ย้าย ${qr.name} ไปโฟลเดอร์`}
-                  className={`flex-1 min-w-0 bg-neutral-900 border border-neutral-700 rounded-lg text-xs px-2 py-1.5 text-neutral-200 hover:border-neutral-500 transition-colors disabled:opacity-50 ${FOCUS}`}
+                  className={`w-40 bg-neutral-900 border border-neutral-700 rounded-lg text-xs px-2 py-1.5 text-neutral-200 hover:border-neutral-500 transition-colors disabled:opacity-50 ${FOCUS}`}
                 >
                   <option value="">ไม่มีกลุ่ม</option>
                   {folders.map((f) => (
                     <option key={f} value={f}>{f}</option>
                   ))}
                 </select>
+                <div className="w-full lg:w-auto lg:flex-1">
+                  <QRCardActions qrId={qr.id} qrName={qr.name} isActive={qr.isActive} />
+                </div>
               </div>
-
-              <QRCardActions qrId={qr.id} qrName={qr.name} isActive={qr.isActive} />
             </div>
           ))}
         </div>

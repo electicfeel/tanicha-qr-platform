@@ -20,7 +20,8 @@ export async function GET(req: NextRequest, { params }: Params) {
   if (error) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const baseUrl = getBaseUrlFromRequest(req);
-  const svgBuffer = await generateQRSVGBuffer(`${baseUrl}/r/${qr.code}`, {
+  // ?qr=1 → สแกนจากไฟล์ที่ดาวน์โหลดไปนับเป็น "สแกน QR"
+  const svgBuffer = await generateQRSVGBuffer(`${baseUrl}/r/${qr.code}?qr=1`, {
     fgColor: qr.fg_color,
     bgColor: qr.bg_color,
     size: qr.size,

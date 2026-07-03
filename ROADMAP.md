@@ -5,7 +5,7 @@
 
 ---
 
-## Phase A — Link-first Architecture (รากฐาน ทำก่อนทุกอย่าง)
+## Phase A — Link-first Architecture ✅ (เสร็จ 2026-06-26)
 
 เปลี่ยน mental model: ตาราง `qr_codes` → แนวคิด `links` ที่ "มี QR ได้" ไม่ใช่ "เป็น QR"
 
@@ -18,7 +18,9 @@
 4. **นับ "คลิก" ไม่ใช่แค่ "สแกน"** — ตาราง `scans` → `clicks` + คอลัมน์ `via` (`qr` / `link`) โดยตรวจจาก referrer/UA ไม่ได้ 100% ให้ใช้ query param `?qr=1` ที่ฝังใน QR URL
 
 **ผลลัพธ์:** สร้าง short link แชร์ในแชท/อีเมลได้เหมือน Bitly โดย QR เป็นออปชัน
-**ประมาณงาน:** 3–5 วัน · ไฟล์หลัก: schema, `src/app/r/[code]/route.ts`, `page.tsx`, create/edit forms
+
+**สิ่งที่ทำจริง (deviation จากแผน):** ไม่ rename ตาราง (prod ใช้ DB เดียวกัน เสี่ยงพังช่วงคาบเกี่ยว) — แยกช่องทางด้วย `scans.via` ('qr'/'link') โดย QR ฝัง `?qr=1` (`sql/004`); "ลิงก์ไม่มี QR" = ฟอร์มสร้างพับส่วน QR เก็บ (styles มี default ไม่ต้องแก้ DB); หน้า List เป็นแถวลิงก์ (QR เป็น thumbnail) + CopyButton ทุกแถว; analytics แยกการ์ด สแกน QR / คลิกลิงก์ (แถวเก่า = "ไม่ระบุ")
+**ข้อจำกัดที่รู้:** QR ที่พิมพ์ก่อน Phase A ไม่มี `?qr=1` → สแกนจะนับเป็น "คลิกลิงก์"
 
 ---
 

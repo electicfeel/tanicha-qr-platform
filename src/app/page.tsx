@@ -42,11 +42,13 @@ export default async function DashboardPage({ searchParams }: Props) {
       name: qr.name,
       code: qr.code,
       destination: qr.destination,
+      shortUrl: `${baseUrl}/r/${qr.code}`,
       isActive: qr.is_active,
       groupName: qr.group_name ?? null,
       scanCount: qr.scans?.[0]?.count ?? 0,
       sparkDaily: dailyCounts(scanDatesByQr.get(qr.id) ?? [], SPARK_DAYS),
-      imageSrc: await generateQRDataURL(`${baseUrl}/r/${qr.code}`, {
+      // ?qr=1 ให้ redirect แยกได้ว่าเข้าจากการสแกน QR (ไม่ใช่คลิกลิงก์)
+      imageSrc: await generateQRDataURL(`${baseUrl}/r/${qr.code}?qr=1`, {
         fgColor: qr.fg_color,
         bgColor: qr.bg_color,
         size: 200,
@@ -59,18 +61,18 @@ export default async function DashboardPage({ searchParams }: Props) {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold">QR ทั้งหมด</h1>
+        <h1 className="text-2xl font-semibold">ลิงก์ทั้งหมด</h1>
         <p className="text-neutral-400 text-sm mt-1">{all.length} รายการ</p>
       </div>
 
       {all.length === 0 ? (
         <div className="text-center py-24 border border-dashed border-neutral-800 rounded-2xl">
-          <p className="text-neutral-500 mb-4">ยังไม่มี QR code</p>
+          <p className="text-neutral-500 mb-4">ยังไม่มีลิงก์</p>
           <Link
             href="/create"
             className="bg-neutral-100 text-neutral-950 text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-white transition-colors"
           >
-            + สร้าง QR แรกของคุณ
+            + สร้างลิงก์แรกของคุณ
           </Link>
         </div>
       ) : (

@@ -25,6 +25,7 @@ export type Scan = {
   referrer: string | null;
   device_type: string | null;
   country: string | null;
+  via: string | null; // 'qr' | 'link' | null (แถวเก่าก่อนมีระบบแยก)
 };
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;

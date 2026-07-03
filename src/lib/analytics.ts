@@ -6,11 +6,14 @@ export type Breakdown = { label: string; count: number };
 
 export type ScanAnalytics = {
   total: number;
+  qrScans: number;   // เข้าผ่านการสแกน QR (?qr=1)
+  linkClicks: number; // เข้าผ่านการคลิกลิงก์ตรง
   lastScanAt: string | null;
   daily: DailyCount[]; // เรียงจากเก่า → ใหม่ ครบทุกวันในช่วง (วันที่ไม่มี scan = 0)
   devices: Breakdown[];
   countries: Breakdown[];
   referrers: Breakdown[];
+  channels: Breakdown[]; // สแกน QR / คลิกลิงก์ / ไม่ระบุ (ข้อมูลเก่า)
 };
 
 // YYYY-MM-DD ตาม local time ของ server
@@ -59,23 +62,27 @@ export async function getScanAnalytics(
 ): Promise<ScanAnalytics> {
   const days = opts.days ?? 30;
 
+  // select("*") ทนต่อคอลัมน์ที่ยังไม่ migrate (คอลัมน์หายไปแค่ไม่อยู่ใน result)
   const { data } = await supabase
     .from("scans")
-    .select("scanned_at, device_type, country, referrer")
+    .select("*")
     .eq("qr_code_id", qrCodeId)
     .order("scanned_at", { ascending: false });
 
-  const scans = (data ?? []) as Pick<
-    Scan,
-    "scanned_at" | "device_type" | "country" | "referrer"
-  >[];
+  const scans = (data ?? []) as Partial<Scan>[] as Scan[];
+
+  const viaLabel = (v: string | null | undefined) =>
+    v === "qr" ? "สแกน QR" : v === "link" ? "คลิกลิงก์" : "ไม่ระบุ (ข้อมูลเก่า)";
 
   return {
     total: scans.length,
+    qrScans: scans.filter((s) => s.via === "qr").length,
+    linkClicks: scans.filter((s) => s.via === "link").length,
     lastScanAt: scans[0]?.scanned_at ?? null,
     daily: dailyCounts(scans.map((s) => s.scanned_at), days),
     devices: tally(scans.map((s) => s.device_type), "unknown"),
     countries: tally(scans.map((s) => s.country), "unknown"),
     referrers: tally(scans.map((s) => s.referrer), "direct"),
+    channels: tally(scans.map((s) => viaLabel(s.via)), "ไม่ระบุ (ข้อมูลเก่า)"),
   };
 }
