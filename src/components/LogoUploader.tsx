@@ -42,7 +42,7 @@ export default function LogoUploader({ value, onChange }: Props) {
             <p className="text-xs text-neutral-400 truncate">{value}</p>
           </div>
           <button type="button" onClick={() => onChange("")}
-            className="text-xs text-red-500 hover:text-red-400 shrink-0">
+            className="focus-ring rounded text-xs text-red-400 hover:text-red-300 shrink-0">
             ลบ
           </button>
         </div>
@@ -51,7 +51,7 @@ export default function LogoUploader({ value, onChange }: Props) {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="border border-dashed border-neutral-700 rounded-xl py-6 text-sm text-neutral-500 hover:border-neutral-500 hover:text-neutral-400 transition-colors disabled:opacity-50"
+          className="focus-ring border border-dashed border-neutral-700 rounded-xl py-6 text-sm text-neutral-400 hover:border-neutral-500 hover:text-neutral-300 transition-colors disabled:opacity-50"
         >
           {uploading ? "กำลังอัปโหลด..." : "+ คลิกเพื่ออัปโหลด logo (PNG, JPG, SVG)"}
         </button>
@@ -60,6 +60,7 @@ export default function LogoUploader({ value, onChange }: Props) {
       <input
         ref={inputRef}
         type="file"
+        aria-label="อัปโหลดไฟล์ logo"
         accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
         className="hidden"
         onChange={(e) => {

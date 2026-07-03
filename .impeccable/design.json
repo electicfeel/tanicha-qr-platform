@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-26T00:00:00Z",
+  "title": "Design System: TANICHA QR Platform",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Signal Green",
+        "canonical": "#10b981",
+        "tonalRamp": ["#064e3b", "#065f46", "#047857", "#059669", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0"]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas (near-black)",
+        "canonical": "#0a0a0a",
+        "tonalRamp": ["#0a0a0a", "#171717", "#262626", "#404040", "#525252", "#737373", "#a3a3a3", "#f5f5f5"]
+      },
+      "danger": {
+        "role": "semantic",
+        "displayName": "Danger Red",
+        "canonical": "#f87171",
+        "tonalRamp": ["#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fca5a5", "#fecaca"]
+      }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Title", "purpose": "Page headers only (e.g. QR ทั้งหมด)." },
+      "body": { "displayName": "Body", "purpose": "Default text and controls at 14px." },
+      "mono": { "displayName": "Mono", "purpose": "Machine tokens only — /r/{code} short links." }
+    },
+    "shadows": [
+      { "name": "none", "value": "none", "purpose": "Flat by default. Depth is tonal step + 1px border, never box-shadow." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing for color/border state transitions." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Hover, focus, and active state changes — users are in flow." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single primary action per surface (create QR, confirm).",
+      "html": "<button class=\"ds-btn-primary\">+ สร้าง QR</button>",
+      "css": ".ds-btn-primary { background: #f5f5f5; color: #0a0a0a; font: 500 0.875rem Inter, ui-sans-serif, system-ui, sans-serif; padding: 8px 16px; border: none; border-radius: 8px; transition: background 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { background: #ffffff; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px #0a0a0a, 0 0 0 4px rgba(16,185,129,0.7); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The workhorse action — edit, download, toggle, new folder.",
+      "html": "<button class=\"ds-btn-secondary\">แก้ไข</button>",
+      "css": ".ds-btn-secondary { background: transparent; color: #f5f5f5; font: 400 0.75rem Inter, ui-sans-serif, system-ui, sans-serif; padding: 10px 12px; border: 1px solid #404040; border-radius: 8px; transition: border-color 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-secondary:hover { border-color: #737373; } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px #0a0a0a, 0 0 0 4px rgba(16,185,129,0.7); }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Destructive only (delete).",
+      "html": "<button class=\"ds-btn-danger\">ลบ</button>",
+      "css": ".ds-btn-danger { background: transparent; color: #f87171; font: 400 0.75rem Inter, ui-sans-serif, system-ui, sans-serif; padding: 10px 12px; border: 1px solid rgba(127,29,29,0.5); border-radius: 8px; transition: border-color 150ms, color 150ms; } .ds-btn-danger:hover { border-color: #b91c1c; color: #fca5a5; } .ds-btn-danger:focus-visible { outline: none; box-shadow: 0 0 0 2px #0a0a0a, 0 0 0 4px rgba(16,185,129,0.7); }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text field — surface fill, border-lightens focus, no glow.",
+      "html": "<input class=\"ds-input\" placeholder=\"ชื่อโฟลเดอร์ / แบรนด์\" />",
+      "css": ".ds-input { background: #171717; color: #f5f5f5; font: 400 0.875rem Inter, ui-sans-serif, system-ui, sans-serif; padding: 10px 16px; border: 1px solid #404040; border-radius: 8px; transition: border-color 150ms cubic-bezier(0.4,0,0.2,1); } .ds-input::placeholder { color: #737373; } .ds-input:focus { outline: none; border-color: #a3a3a3; }"
+    },
+    {
+      "name": "Folder Tile",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Brand folder — navigates on click, highlights emerald as a drop target.",
+      "html": "<button class=\"ds-folder\"><span class=\"ds-folder-icon\">📁</span><span class=\"ds-folder-meta\"><span class=\"ds-folder-name\">แบรนด์ A</span><span class=\"ds-folder-count\">3 รายการ</span></span></button>",
+      "css": ".ds-folder { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: transparent; border: 1px solid #262626; border-radius: 12px; text-align: left; cursor: pointer; transition: border-color 150ms, background 150ms; } .ds-folder:hover { border-color: #525252; } .ds-folder.is-drop-target { border-color: #10b981; background: rgba(16,185,129,0.1); } .ds-folder-icon { font-size: 20px; } .ds-folder-name { display: block; font: 400 0.875rem Inter, sans-serif; color: #f5f5f5; } .ds-folder-count { display: block; font: 400 0.75rem Inter, sans-serif; color: #737373; }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "chip-status",
+      "description": "QR active/inactive — active glows emerald, inactive recedes.",
+      "html": "<span class=\"ds-chip is-active\">เปิด</span>",
+      "css": ".ds-chip { display: inline-block; font: 400 0.75rem Inter, sans-serif; padding: 2px 8px; border-radius: 9999px; } .ds-chip.is-active { background: rgba(6,78,59,0.4); color: #34d399; } .ds-chip.is-inactive { background: #262626; color: #737373; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Utility Panel",
+    "overview": "A control surface, not a showcase. A marketing team opens it between other tasks to spin up a short link or QR, repoint a campaign, read a click trend, arrange a brand's bio page, and drag a link into a brand folder — then leaves. Exception: the public bio page (/p/{handle}) is brand surface — mobile-first, themed per brand — while its editor stays inside this utility panel. Everything is dark, flat, and border-defined: a near-black canvas with content lifted one tonal step onto surfaces, separated by hairline borders. No gradient, no shadow, no decorative motion. The one voice of color is Signal Green (emerald), used only where state lives, never as decoration. Type is a single family (Inter) at a fixed rem scale; monospace shows up only for machine tokens like a /r/{code} short link. Components are tactile and confident — real hover and focus feedback, honest press states — restrained in ornament, not in responsiveness.",
+    "keyCharacteristics": [
+      "Dark, flat, border-defined — depth from tone + 1px lines, never shadow",
+      "Emerald is a state signal on a handful of elements per screen, never decoration",
+      "One type family (Inter), fixed rem scale, mono only for codes",
+      "Thai-first UX copy: direct, short, immediately legible",
+      "WCAG AA legibility is a floor, not a nice-to-have"
+    ],
+    "rules": [
+      { "name": "The Accent-as-Signal Rule", "body": "Emerald is reserved for state — active, selected, drop-target, focus. If it is doing decoration, it is wrong. Its rarity is the point.", "section": "colors" },
+      { "name": "The Legibility-Floor Rule", "body": "No meaningful text uses neutral-600 (#525252) on canvas — it fails AA (~2.6:1). Muted text bottoms out at neutral-500 (#737373); prefer neutral-400 when the text carries real information.", "section": "colors" },
+      { "name": "The One-Family Rule", "body": "Inter carries everything. A second UI face is prohibited; if two heading styles look different across screens, one is a bug.", "section": "typography" },
+      { "name": "The Fixed-Scale Rule", "body": "Type sizes are fixed rem steps, never fluid clamp(). A product tool viewed at consistent DPI does not need fluid headings.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "No box-shadow, ever, for elevation. Hierarchy is border + tonal step. To feel raised, lighten the border or step the background one tone — do not float it.", "section": "elevation" },
+      { "name": "The State-Not-Ornament Rule", "body": "The only things that visibly change are responses to the user: border lightens on hover, an emerald ring on focus, an emerald tint on a live drop target. Nothing moves or glows for decoration.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep emerald a state signal — active, selected, drop target, focus — on only a handful of elements per screen.",
+      "Do build depth from 1px borders + the canvas→surface tonal step (#0a0a0a → #171717), never shadow.",
+      "Do set every type element in Inter; reserve monospace for machine tokens like /r/{code}.",
+      "Do hold WCAG AA: meaningful text at neutral-500 (#737373) minimum on canvas, neutral-400 when it carries information; placeholders at #737373, not dimmer.",
+      "Do give every interactive element a visible emerald focus-visible ring, and keep one clear primary action per surface."
+    ],
+    "donts": [
+      "Don't ship the SaaS / AI-generic look: identical card grids wall to wall, gradient fills, gradient text, the hero-metric template, tiny uppercase tracked eyebrows over every section, or decorative glassmorphism.",
+      "Don't let a surface get cluttered or over-dense — crowded actions, buried hierarchy, no obvious next step. If a screen has more than one primary action, one is wrong.",
+      "Don't use neutral-600 (#525252) for any readable text on canvas — it fails AA (~2.6:1).",
+      "Don't put gray text on the emerald chip or any colored fill; use the fill's own hue (emerald-400 on emerald-900).",
+      "Don't add side-stripe borders (border-left/border-right > 1px as an accent) or any box-shadow for elevation."
+    ]
+  }
+}

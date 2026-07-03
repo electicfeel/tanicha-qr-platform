@@ -25,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const body = await req.json();
-  const { name, destination, fgColor, bgColor, size, isActive, dotStyle, logoUrl } = body;
+  const { name, destination, fgColor, bgColor, size, isActive, dotStyle, logoUrl, groupName } = body;
 
   const supabase = createSupabaseClient();
 
@@ -40,6 +40,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       ...(isActive !== undefined && { is_active: isActive }),
       ...(dotStyle !== undefined && { dot_style: dotStyle }),
       ...(logoUrl !== undefined && { logo_url: logoUrl }),
+      // ค่าว่าง = เอาออกจากกลุ่ม (null)
+      ...(groupName !== undefined && { group_name: groupName?.trim() || null }),
     })
     .eq("id", id)
     .select()

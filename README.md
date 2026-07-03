@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TANICHA Link Platform
 
-## Getting Started
+เครื่องมือภายในทีมการตลาด (หลายแบรนด์) แนว Bitly — **dynamic short links** เป็นแกน ต่อยอดด้วย QR, analytics และ bio pages
 
-First, run the development server:
+- `/r/{code}` — short link เปลี่ยนปลายทางได้ตลอด (ลิงก์/QR ที่แชร์ไปแล้วไม่เปลี่ยน)
+- QR ปรับแต่งได้ (สี, dot style, โลโก้แบรนด์) ดาวน์โหลด PNG/SVG
+- Analytics ต่อลิงก์: อุปกรณ์ / referrer / ประเทศ / กราฟรายวัน / export CSV
+- จัดกลุ่มตามแบรนด์แบบโฟลเดอร์ (drag & drop)
+- (แผน) Bio pages `/p/{handle}` แบบ Linktree + custom domain ต่อแบรนด์ — ดู [ROADMAP.md](ROADMAP.md)
+
+## เอกสารโปรเจกต์
+
+| ไฟล์ | เนื้อหา |
+|---|---|
+| [PRODUCT.md](PRODUCT.md) | ผู้ใช้, จุดประสงค์, design principles, ขอบเขตที่ตัด |
+| [DESIGN.md](DESIGN.md) | visual system (tokens, components, กติกา) |
+| [ROADMAP.md](ROADMAP.md) | แผนพัฒนา Phase A–H |
+| [AGENTS.md](AGENTS.md) | context + ข้อจำกัดสำหรับ AI agents |
+
+## Stack
+
+Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind 4 · Supabase (Postgres + Storage) · `qrcode` + `sharp`
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp /path/to/.env .env   # ต้องมี NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY
+npm run dev             # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Database migrations:** ไม่มี tooling อัตโนมัติ — รันไฟล์ใน [`sql/`](sql/) ตามลำดับเลขใน Supabase Dashboard → SQL Editor (ทุกไฟล์เป็น `if not exists` รันซ้ำได้)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Env สำคัญ:** อย่าตั้ง `NEXT_PUBLIC_BASE_URL` บน production — ระบบอ่านโดเมนจาก request host เอง (รองรับหลายโดเมน) ตั้งเฉพาะเมื่อต้องการบังคับ canonical domain
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## คำสั่ง
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev     # dev server (Turbopack)
+npm run build   # production build + typecheck
+npm run lint    # eslint
+```

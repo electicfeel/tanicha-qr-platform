@@ -2,11 +2,17 @@ import Link from "next/link";
 import { createSupabaseClient } from "@/lib/supabase";
 import { generateQRDataURL } from "@/lib/qr";
 import { getBaseUrl } from "@/lib/url";
-import QRCardActions from "@/components/QRCardActions";
+import { dailyCounts, sinceISO } from "@/lib/analytics";
+import DriveView, { type DriveQR } from "@/components/DriveView";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+const SPARK_DAYS = 7;
+
+type Props = { searchParams: Promise<{ group?: string }> };
+
+export default async function DashboardPage({ searchParams }: Props) {
+  const { group: selected } = await searchParams;
   const supabase = createSupabaseClient();
 
   const { data: qrCodes } = await supabase
@@ -14,31 +20,50 @@ export default async function DashboardPage() {
     .select("*, scans(count)")
     .order("created_at", { ascending: false });
 
-  const list = qrCodes ?? [];
-  const baseUrl = getBaseUrl();
+  const all = qrCodes ?? [];
+  const baseUrl = await getBaseUrl();
 
-  const qrImages = await Promise.all(
-    list.map((qr) =>
-      generateQRDataURL(`${baseUrl}/r/${qr.code}`, {
+  // ดึง scan ช่วง SPARK_DAYS วันล่าสุดของทุก QR ในคิวรีเดียว แล้วจัดกลุ่มต่อ QR
+  const { data: recentScans } = await supabase
+    .from("scans")
+    .select("qr_code_id, scanned_at")
+    .gte("scanned_at", sinceISO(SPARK_DAYS));
+
+  const scanDatesByQr = new Map<string, string[]>();
+  for (const s of recentScans ?? []) {
+    const arr = scanDatesByQr.get(s.qr_code_id) ?? [];
+    arr.push(s.scanned_at);
+    scanDatesByQr.set(s.qr_code_id, arr);
+  }
+
+  const qrs: DriveQR[] = await Promise.all(
+    all.map(async (qr) => ({
+      id: qr.id,
+      name: qr.name,
+      code: qr.code,
+      destination: qr.destination,
+      isActive: qr.is_active,
+      groupName: qr.group_name ?? null,
+      scanCount: qr.scans?.[0]?.count ?? 0,
+      sparkDaily: dailyCounts(scanDatesByQr.get(qr.id) ?? [], SPARK_DAYS),
+      imageSrc: await generateQRDataURL(`${baseUrl}/r/${qr.code}`, {
         fgColor: qr.fg_color,
         bgColor: qr.bg_color,
         size: 200,
         dotStyle: qr.dot_style ?? "square",
         logoUrl: qr.logo_url ?? undefined,
-      })
-    )
+      }),
+    }))
   );
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold">QR ทั้งหมด</h1>
-          <p className="text-neutral-400 text-sm mt-1">{list.length} รายการ</p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold">QR ทั้งหมด</h1>
+        <p className="text-neutral-400 text-sm mt-1">{all.length} รายการ</p>
       </div>
 
-      {list.length === 0 ? (
+      {all.length === 0 ? (
         <div className="text-center py-24 border border-dashed border-neutral-800 rounded-2xl">
           <p className="text-neutral-500 mb-4">ยังไม่มี QR code</p>
           <Link
@@ -49,38 +74,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {list.map((qr, i) => (
-            <div
-              key={qr.id}
-              className="border border-neutral-800 rounded-2xl p-5 flex flex-col gap-4 hover:border-neutral-600 transition-colors"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <h2 className="font-medium truncate">{qr.name}</h2>
-                  <p className="text-neutral-400 text-xs truncate mt-0.5">{qr.destination}</p>
-                </div>
-                <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full ${qr.is_active ? "bg-emerald-900/40 text-emerald-400" : "bg-neutral-800 text-neutral-500"}`}>
-                  {qr.is_active ? "เปิด" : "ปิด"}
-                </span>
-              </div>
-
-              <div className="flex justify-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={qrImages[i]} alt={qr.name} width={140} height={140} className="rounded-lg" />
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-neutral-400">
-                  สแกน <span className="text-neutral-100 font-medium">{qr.scans?.[0]?.count ?? 0}</span> ครั้ง
-                </span>
-                <span className="text-neutral-600 text-xs font-mono">/r/{qr.code}</span>
-              </div>
-
-              <QRCardActions qrId={qr.id} qrName={qr.name} isActive={qr.is_active} />
-            </div>
-          ))}
-        </div>
+        <DriveView qrs={qrs} currentFolder={selected ?? null} />
       )}
     </div>
   );

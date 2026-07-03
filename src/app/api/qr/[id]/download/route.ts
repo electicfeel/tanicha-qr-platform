@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseClient } from "@/lib/supabase";
 import { generateQRSVGBuffer } from "@/lib/qr";
-import { getBaseUrl } from "@/lib/url";
+import { getBaseUrlFromRequest } from "@/lib/url";
 import sharp from "sharp";
 
 type Params = { params: Promise<{ id: string }> };
 
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
+  const format = req.nextUrl.searchParams.get("format") === "svg" ? "svg" : "png";
   const supabase = createSupabaseClient();
 
   const { data: qr, error } = await supabase
@@ -18,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   if (error) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const baseUrl = getBaseUrl();
+  const baseUrl = getBaseUrlFromRequest(req);
   const svgBuffer = await generateQRSVGBuffer(`${baseUrl}/r/${qr.code}`, {
     fgColor: qr.fg_color,
     bgColor: qr.bg_color,
@@ -26,6 +27,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
     dotStyle: qr.dot_style ?? "square",
     logoUrl: qr.logo_url ?? undefined,
   });
+
+  if (format === "svg") {
+    return new NextResponse(svgBuffer as unknown as BodyInit, {
+      headers: {
+        "Content-Type": "image/svg+xml",
+        "Content-Disposition": `attachment; filename="${qr.name}-qr.svg"`,
+      },
+    });
+  }
 
   const pngBuffer = await sharp(svgBuffer).png().toBuffer();
 

@@ -1,16 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import LogoUploader from "@/components/LogoUploader";
 import QRPreview from "@/components/QRPreview";
+import GroupSelect from "@/components/GroupSelect";
 import type { DotStyle } from "@/lib/qr";
 
 export default function CreatePage() {
   const router = useRouter();
+  const uid = useId();
   const [form, setForm] = useState({
     name: "",
     destination: "",
+    groupName: "",
+    code: "",
+    expiresAt: "",
     fgColor: "#000000",
     bgColor: "#FFFFFF",
     size: 300,
@@ -29,29 +34,37 @@ export default function CreatePage() {
     setLoading(true);
     setError("");
 
-    const res = await fetch("/api/qr", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: form.name,
-        destination: form.destination,
-        fgColor: form.fgColor,
-        bgColor: form.bgColor,
-        size: form.size,
-        dotStyle: form.dotStyle,
-        logoUrl: form.logoUrl || null,
-      }),
-    });
+    try {
+      const res = await fetch("/api/qr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          destination: form.destination,
+          groupName: form.groupName || undefined,
+          code: form.code || undefined,
+          expiresAt: form.expiresAt || null,
+          fgColor: form.fgColor,
+          bgColor: form.bgColor,
+          size: form.size,
+          dotStyle: form.dotStyle,
+          logoUrl: form.logoUrl || null,
+        }),
+      });
 
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "เกิดข้อผิดพลาด");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "เกิดข้อผิดพลาด");
+        setLoading(false);
+        return;
+      }
+
+      router.push("/");
+      router.refresh();
+    } catch {
+      setError("เชื่อมต่อไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
       setLoading(false);
-      return;
     }
-
-    router.push("/");
-    router.refresh();
   }
 
   return (
@@ -63,27 +76,56 @@ export default function CreatePage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm text-neutral-400">ชื่อ QR</label>
+            <label htmlFor={`${uid}-name`} className="text-sm text-neutral-400">ชื่อ QR</label>
             <input
+              id={`${uid}-name`}
               type="text"
               value={form.name}
               onChange={(e) => update("name", e.target.value)}
               placeholder="เช่น โปรโมชั่น เดือนพฤษภาคม"
               required
-              className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-neutral-400 placeholder-neutral-600"
+              className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-neutral-400 placeholder-neutral-500"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm text-neutral-400">URL ปลายทาง</label>
+            <label htmlFor={`${uid}-dest`} className="text-sm text-neutral-400">URL ปลายทาง</label>
             <input
+              id={`${uid}-dest`}
               type="url"
               value={form.destination}
               onChange={(e) => update("destination", e.target.value)}
               placeholder="https://example.com"
               required
-              className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-neutral-400 placeholder-neutral-600"
+              className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-neutral-400 placeholder-neutral-500"
             />
+          </div>
+
+          <GroupSelect value={form.groupName} onChange={(v) => update("groupName", v)} />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor={`${uid}-code`} className="text-sm text-neutral-400">Custom code (ไม่บังคับ)</label>
+              <input
+                id={`${uid}-code`}
+                type="text"
+                value={form.code}
+                onChange={(e) => update("code", e.target.value)}
+                placeholder="เว้นว่าง = สุ่มอัตโนมัติ"
+                pattern="[a-zA-Z0-9-]{3,32}"
+                className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm font-mono focus:outline-none focus:border-neutral-400 placeholder-neutral-500"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor={`${uid}-expires`} className="text-sm text-neutral-400">วันหมดอายุ (ไม่บังคับ)</label>
+              <input
+                id={`${uid}-expires`}
+                type="datetime-local"
+                value={form.expiresAt}
+                onChange={(e) => update("expiresAt", e.target.value)}
+                className="bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-neutral-400 placeholder-neutral-500"
+              />
+            </div>
           </div>
 
           {/* Dot Style */}
@@ -95,7 +137,8 @@ export default function CreatePage() {
                   key={style}
                   type="button"
                   onClick={() => update("dotStyle", style)}
-                  className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-xl border transition-colors ${
+                  aria-pressed={form.dotStyle === style}
+                  className={`focus-ring flex-1 flex flex-col items-center gap-2 py-3 rounded-xl border transition-colors ${
                     form.dotStyle === style
                       ? "border-neutral-100 bg-neutral-900"
                       : "border-neutral-700 hover:border-neutral-500"
@@ -118,17 +161,17 @@ export default function CreatePage() {
           {/* Colors */}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm text-neutral-400">สี QR</label>
+              <label htmlFor={`${uid}-fg`} className="text-sm text-neutral-400">สี QR</label>
               <div className="flex items-center gap-3">
-                <input type="color" value={form.fgColor} onChange={(e) => update("fgColor", e.target.value)}
+                <input id={`${uid}-fg`} type="color" value={form.fgColor} onChange={(e) => update("fgColor", e.target.value)}
                   className="w-10 h-10 rounded-lg border border-neutral-700 bg-transparent cursor-pointer" />
                 <span className="text-sm font-mono text-neutral-400">{form.fgColor}</span>
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm text-neutral-400">สีพื้นหลัง</label>
+              <label htmlFor={`${uid}-bg`} className="text-sm text-neutral-400">สีพื้นหลัง</label>
               <div className="flex items-center gap-3">
-                <input type="color" value={form.bgColor} onChange={(e) => update("bgColor", e.target.value)}
+                <input id={`${uid}-bg`} type="color" value={form.bgColor} onChange={(e) => update("bgColor", e.target.value)}
                   className="w-10 h-10 rounded-lg border border-neutral-700 bg-transparent cursor-pointer" />
                 <span className="text-sm font-mono text-neutral-400">{form.bgColor}</span>
               </div>
@@ -137,11 +180,11 @@ export default function CreatePage() {
 
           {/* Size */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm text-neutral-400">ขนาด: {form.size}px</label>
-            <input type="range" min={200} max={600} step={50} value={form.size}
+            <label htmlFor={`${uid}-size`} className="text-sm text-neutral-400">ขนาด: {form.size}px</label>
+            <input id={`${uid}-size`} type="range" min={200} max={600} step={50} value={form.size}
               onChange={(e) => update("size", Number(e.target.value))}
               className="accent-neutral-100" />
-            <div className="flex justify-between text-xs text-neutral-600">
+            <div className="flex justify-between text-xs text-neutral-500">
               <span>200px</span><span>600px</span>
             </div>
           </div>
@@ -152,15 +195,15 @@ export default function CreatePage() {
             onChange={(url) => update("logoUrl", url)}
           />
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p role="alert" className="text-red-400 text-sm">{error}</p>}
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => router.back()}
-              className="flex-1 border border-neutral-700 rounded-lg py-2.5 text-sm hover:border-neutral-500 transition-colors">
+              className="focus-ring flex-1 border border-neutral-700 rounded-lg py-2.5 text-sm hover:border-neutral-500 transition-colors">
               ยกเลิก
             </button>
             <button type="submit" disabled={loading}
-              className="flex-1 bg-neutral-100 text-neutral-950 rounded-lg py-2.5 text-sm font-medium hover:bg-white transition-colors disabled:opacity-50">
+              className="focus-ring flex-1 bg-neutral-100 text-neutral-950 rounded-lg py-2.5 text-sm font-medium hover:bg-white transition-colors disabled:opacity-50">
               {loading ? "กำลังสร้าง..." : "สร้าง QR"}
             </button>
           </div>

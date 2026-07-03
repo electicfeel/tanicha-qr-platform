@@ -21,9 +21,11 @@ export async function GET() {
   return NextResponse.json(qrCodes);
 }
 
+const CUSTOM_CODE_RE = /^[a-z0-9-]{3,32}$/;
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, destination, fgColor, bgColor, size, dotStyle, logoUrl } = body;
+  const { name, destination, fgColor, bgColor, size, dotStyle, logoUrl, code: rawCode, expiresAt, groupName } = body;
 
   if (!name || !destination) {
     return NextResponse.json(
@@ -33,7 +35,28 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createSupabaseClient();
-  const code = nanoid(8);
+
+  // Custom short code (ถ้าระบุ) — รองรับ a-z 0-9 - ยาว 3-32 ตัว และห้ามชนของเดิม
+  let code: string;
+  if (rawCode != null && String(rawCode).trim() !== "") {
+    code = String(rawCode).trim().toLowerCase();
+    if (!CUSTOM_CODE_RE.test(code)) {
+      return NextResponse.json(
+        { error: "code ต้องเป็น a-z, 0-9, - ความยาว 3-32 ตัว" },
+        { status: 400 }
+      );
+    }
+    const { data: existing } = await supabase
+      .from("qr_codes")
+      .select("id")
+      .eq("code", code)
+      .maybeSingle();
+    if (existing) {
+      return NextResponse.json({ error: "code นี้ถูกใช้แล้ว" }, { status: 409 });
+    }
+  } else {
+    code = nanoid(8);
+  }
 
   const { data, error } = await supabase
     .from("qr_codes")
@@ -46,6 +69,9 @@ export async function POST(req: NextRequest) {
       size: size ?? 300,
       dot_style: dotStyle ?? "square",
       logo_url: logoUrl ?? null,
+      expires_at: expiresAt || null,
+      // ใส่ group_name เฉพาะเมื่อระบุ — กันการสร้างพังหากยังไม่ได้รัน migration
+      ...(groupName?.trim() ? { group_name: groupName.trim() } : {}),
     })
     .select()
     .single();

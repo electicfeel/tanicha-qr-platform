@@ -9,6 +9,10 @@ export type QrCode = {
   fg_color: string;
   bg_color: string;
   size: number;
+  dot_style: string | null;
+  logo_url: string | null;
+  expires_at: string | null;
+  group_name: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -17,6 +21,10 @@ export type Scan = {
   id: string;
   qr_code_id: string;
   scanned_at: string;
+  user_agent: string | null;
+  referrer: string | null;
+  device_type: string | null;
+  country: string | null;
 };
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;

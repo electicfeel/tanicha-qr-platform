@@ -16,14 +16,22 @@ model QrCode {
   fgColor     String   @default("#000000")
   bgColor     String   @default("#FFFFFF")
   size        Int      @default(300)
+  dotStyle    String   @default("square")
+  logoUrl     String?
+  expiresAt   DateTime?
+  groupName   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   scans       Scan[]
 }
 
 model Scan {
-  id        String   @id @default(cuid())
-  qrCode    QrCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
-  qrCodeId  String
-  scannedAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  qrCode     QrCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  qrCodeId   String
+  scannedAt  DateTime @default(now())
+  userAgent  String?
+  referrer   String?
+  deviceType String?
+  country    String?
 }
